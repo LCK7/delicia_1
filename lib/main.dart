@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'src/screens/catalogo_screen.dart';
-import 'src/screens/carrito_screen.dart';
+import 'src/screens/home_screen.dart';
 import 'src/screens/login_screen.dart';
+import 'src/services/auth_service.dart';
 import 'src/screens/register_screen.dart';
-import 'src/screens/add_producto_screen.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,16 +20,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final usuario = AuthService.usuarioActual;
     return MaterialApp(
       title: 'Panadería App',
       theme: ThemeData(primarySwatch: Colors.brown),
-      initialRoute: '/',
+      home: usuario == null ? const LoginScreen() : const HomeScreen(),
       routes: {
-        '/': (context) => const CatalogoScreen(),
-        '/carrito': (context) => const CarritoScreen(),
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
-        '/add_producto': (context) => const AddProductoScreen(),
       },
     );
   }
