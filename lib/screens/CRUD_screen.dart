@@ -11,6 +11,7 @@ class _CRUDScreenState extends State<CRUDScreen> {
   final TextEditingController _nombre = TextEditingController();
   final TextEditingController _descripcion = TextEditingController();
   final TextEditingController _precio = TextEditingController();
+  final TextEditingController _imagen = TextEditingController();
 
   String? _idSeleccionado;
 
@@ -25,6 +26,7 @@ class _CRUDScreenState extends State<CRUDScreen> {
       'nombre': _nombre.text.trim(),
       'descripcion': _descripcion.text.trim(),
       'precio': double.tryParse(_precio.text) ?? 0.0,
+      'imagen': _imagen.text.trim(),
     };
     try {
       await FirebaseFirestore.instance.collection('productos').add(datos);
@@ -41,6 +43,7 @@ class _CRUDScreenState extends State<CRUDScreen> {
       'nombre': _nombre.text.trim(),
       'descripcion': _descripcion.text.trim(),
       'precio': double.tryParse(_precio.text) ?? 0.0,
+      'imagen': _imagen.text.trim(),
     };
     try {
       await FirebaseFirestore.instance.collection('productos').doc(id).update(datos);
@@ -66,12 +69,13 @@ class _CRUDScreenState extends State<CRUDScreen> {
       _nombre.clear();
       _descripcion.clear();
       _precio.clear();
+      _imagen.clear();
       _idSeleccionado = null;
     });
   }
 
   bool _validarCampos() {
-    if (_nombre.text.isEmpty || _descripcion.text.isEmpty || _precio.text.isEmpty) {
+    if (_nombre.text.isEmpty || _descripcion.text.isEmpty || _precio.text.isEmpty||_imagen.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor completa todos los campos')),
       );
@@ -84,6 +88,11 @@ class _CRUDScreenState extends State<CRUDScreen> {
       );
       return false;
     }
+    if (!_imagen.text.contains('drive.google.com')){
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ingresa un enlace valido de Google Drive')),
+      );
+    }
     return true;
   }
 
@@ -92,6 +101,7 @@ class _CRUDScreenState extends State<CRUDScreen> {
     _nombre.dispose();
     _descripcion.dispose();
     _precio.dispose();
+    _imagen.dispose();
     super.dispose();
   }
 
@@ -123,6 +133,14 @@ class _CRUDScreenState extends State<CRUDScreen> {
             decoration: const InputDecoration(
               labelText: "Precio (S/.)",
               icon: Icon(Icons.monetization_on),
+            ),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: _imagen,
+            decoration: const InputDecoration(
+              labelText: "Enlace de imagen (Drive)",
+              icon: Icon(Icons.image),
             ),
           ),
           const SizedBox(height: 10),
@@ -188,6 +206,7 @@ class _CRUDScreenState extends State<CRUDScreen> {
                                 _nombre.text = producto['nombre'];
                                 _descripcion.text = producto['descripcion'] ?? '';
                                 _precio.text = producto['precio'].toString();
+                                _imagen.text = producto['imagen'] ?? '';
                               });
                             },
                           ),

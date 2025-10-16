@@ -132,8 +132,8 @@ class _CarritoScreenState extends State<CarritoScreen> {
               Expanded(
                 child: ElevatedButton(
                   onPressed: SimpleCart.instance.items.isEmpty ? null : _finalizarCompra,
-                  child: const Text('Finalizar compra'),
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                  child: const Text('Finalizar compra'),
                 ),
               ),
               const SizedBox(width: 10),
@@ -143,8 +143,8 @@ class _CarritoScreenState extends State<CarritoScreen> {
                     SimpleCart.instance.clear();
                   });
                 },
-                child: const Text('Vaciar'),
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+                child: const Text('Vaciar'),
               ),
             ],
           )
