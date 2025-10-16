@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'carrito_screen.dart';
 
-// 🔹 Función para convertir enlaces de Google Drive en enlaces directos
 String convertirEnlaceDriveADirecto(String enlaceDrive) {
-  // Caso 1: formato /d/ID
   final regExp1 = RegExp(r'/d/([a-zA-Z0-9_-]+)');
   final match1 = regExp1.firstMatch(enlaceDrive);
 
@@ -71,7 +69,6 @@ class CatalogoScreen extends StatelessWidget {
               'imagen': p['imagen'] ?? '',
             };
 
-            // 🔹 Convertir el enlace de Drive a directo
             final urlImagen = convertirEnlaceDriveADirecto(producto['imagen']);
 
             return Card(
