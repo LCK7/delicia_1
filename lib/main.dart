@@ -8,6 +8,7 @@ import 'screens/catalogo_screen.dart';
 import 'screens/carrito_screen.dart';
 import 'screens/perfil_screen.dart';
 import 'screens/CRUD_screen.dart';
+import 'screens/produccion_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -111,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // --- Páginas disponibles según rol ---
     final List<Widget> pages = _isAdmin
-        ? const [CatalogoScreen(), CarritoScreen(), CRUDScreen(), PerfilScreen()]
+        ? const [CatalogoScreen(), CarritoScreen(), CRUDScreen(),ProduccionScreen(),PerfilScreen()]
         : const [CatalogoScreen(), CarritoScreen(), PerfilScreen()];
 
     final List<BottomNavigationBarItem> navItems = _isAdmin
@@ -119,6 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
             BottomNavigationBarItem(icon: Icon(Icons.storefront), label: 'Catálogo'),
             BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Carrito'),
             BottomNavigationBarItem(icon: Icon(Icons.inventory), label: 'CRUD'),
+            BottomNavigationBarItem(icon: Icon(Icons.production_quantity_limits), label: 'Producción'),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
           ]
         : const [

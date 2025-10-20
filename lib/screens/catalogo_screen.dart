@@ -28,9 +28,23 @@ class CatalogoScreen extends StatelessWidget {
   const CatalogoScreen({super.key});
 
   void _agregarAlCarrito(BuildContext context, Map<String, dynamic> producto) {
+    if (producto['stock'] == null || producto['stock'] <= 0) {
+      ScaffoldMessenger.of(context)
+      ..removeCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(
+          content: Text('No hay stock disponible para este producto'),
+          duration: Duration(seconds: 1),),
+      );
+      return;
+    }
     SimpleCart.instance.addItem(producto);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Producto agregado al carrito')),
+    ScaffoldMessenger.of(context)
+    ..removeCurrentSnackBar()
+    ..showSnackBar(
+      const SnackBar(
+        content: Text('Producto agregado al carrito'),
+        duration: Duration(seconds: 1),),
     );
   }
 
@@ -67,6 +81,7 @@ class CatalogoScreen extends StatelessWidget {
                   ? (p['precio'] as int).toDouble()
                   : (p['precio'] as num).toDouble(),
               'imagen': p['imagen'] ?? '',
+              'stock': p['stock'] ?? 0,
             };
 
             final urlImagen = convertirEnlaceDriveADirecto(producto['imagen']);
@@ -75,7 +90,6 @@ class CatalogoScreen extends StatelessWidget {
               elevation: 2,
               margin: const EdgeInsets.symmetric(vertical: 6),
               child: ListTile(
-                // 🔹 Mostrar imagen si existe, de lo contrario un ícono por defecto
                 leading: urlImagen.isNotEmpty
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(8),
@@ -96,6 +110,16 @@ class CatalogoScreen extends StatelessWidget {
                   children: [
                     Text(producto['descripcion'] ?? ''),
                     const SizedBox(height: 4),
+                    Text('S/ ${producto['precio'].toStringAsFixed(2)}'),
+                    const SizedBox(height: 4),
+                    Text( 'Stock disponible: ${producto['stock']}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: producto['stock'] == 0
+                                ? Colors.red
+                                : (producto['stock'] < 10 ? Colors.orange : Colors.green),
+                          ),
+                    ),
                     Text('S/ ${producto['precio'].toStringAsFixed(2)}'),
                   ],
                 ),

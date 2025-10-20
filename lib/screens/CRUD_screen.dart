@@ -12,6 +12,8 @@ class _CRUDScreenState extends State<CRUDScreen> {
   final TextEditingController _descripcion = TextEditingController();
   final TextEditingController _precio = TextEditingController();
   final TextEditingController _imagen = TextEditingController();
+  final TextEditingController _stock = TextEditingController();
+
 
   String? _idSeleccionado;
 
@@ -27,6 +29,7 @@ class _CRUDScreenState extends State<CRUDScreen> {
       'descripcion': _descripcion.text.trim(),
       'precio': double.tryParse(_precio.text) ?? 0.0,
       'imagen': _imagen.text.trim(),
+      'stock': int.tryParse(_stock.text) ?? 0,
     };
     try {
       await FirebaseFirestore.instance.collection('productos').add(datos);
@@ -44,6 +47,7 @@ class _CRUDScreenState extends State<CRUDScreen> {
       'descripcion': _descripcion.text.trim(),
       'precio': double.tryParse(_precio.text) ?? 0.0,
       'imagen': _imagen.text.trim(),
+      'stock': int.tryParse(_stock.text) ?? 0,
     };
     try {
       await FirebaseFirestore.instance.collection('productos').doc(id).update(datos);
@@ -70,6 +74,7 @@ class _CRUDScreenState extends State<CRUDScreen> {
       _descripcion.clear();
       _precio.clear();
       _imagen.clear();
+      _stock.clear();
       _idSeleccionado = null;
     });
   }
@@ -78,6 +83,12 @@ class _CRUDScreenState extends State<CRUDScreen> {
     if (_nombre.text.isEmpty || _descripcion.text.isEmpty || _precio.text.isEmpty||_imagen.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor completa todos los campos')),
+      );
+      return false;
+    }
+    if (_stock.text.isEmpty || int.tryParse(_stock.text) == null || int.parse(_stock.text) < 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('El stock debe ser un número válido mayor o igual a 0')),
       );
       return false;
     }
@@ -102,6 +113,7 @@ class _CRUDScreenState extends State<CRUDScreen> {
     _descripcion.dispose();
     _precio.dispose();
     _imagen.dispose();
+    _stock.dispose();
     super.dispose();
   }
 
@@ -141,6 +153,14 @@ class _CRUDScreenState extends State<CRUDScreen> {
             decoration: const InputDecoration(
               labelText: "Enlace de imagen (Drive)",
               icon: Icon(Icons.image),
+            ),
+          ),
+          TextField(
+            controller: _stock,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: "Stock",
+              icon: Icon(Icons.storage),
             ),
           ),
           const SizedBox(height: 10),
@@ -207,6 +227,7 @@ class _CRUDScreenState extends State<CRUDScreen> {
                                 _descripcion.text = producto['descripcion'] ?? '';
                                 _precio.text = producto['precio'].toString();
                                 _imagen.text = producto['imagen'] ?? '';
+                                _stock.text = producto['stock']?.toString() ?? '0';
                               });
                             },
                           ),

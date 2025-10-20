@@ -22,10 +22,29 @@ class SimpleCart {
         'nombre': producto['nombre'],
         'precio': producto['precio'],
         'cantidad': 1,
+        'stock':producto['stock'],
       };
     }
   }
+  void increment(String id) {
+    if (_items.containsKey(id)) {
+      final item = _items[id]!;
+      final stock = item['stock'] ?? 99999;
+      if (item['cantidad'] < stock) {
+        item['cantidad']++;
+      }
+    }
+  }
 
+  void decrement(String id) {
+    if (_items.containsKey(id)) {
+      if (_items[id]!['cantidad'] > 1) {
+        _items[id]!['cantidad']--;
+      } else {
+        _items.remove(id); // Si llega a 0, lo eliminamos
+      }
+    }
+  }
   void removeItem(String id) {
     _items.remove(id);
   }
@@ -66,7 +85,26 @@ class _CarritoScreenState extends State<CarritoScreen> {
 
     setState(() => _procesando = true);
     try {
-      // Estructura: ventas: email,fecha,productos (lista de mapas con cantidad,nombre,precio), total, uid
+      final batch = FirebaseFirestore.instance.batch();
+
+      for (var item in items) {
+        final docRef = FirebaseFirestore.instance.collection('productos').doc(item['id']);
+        final docSnap = await docRef.get();
+
+        if (!docSnap.exists) {
+          throw Exception('El producto ${item['nombre']} no existe.');
+        }
+
+        final currentStock = docSnap['stock'] ?? 0;
+        final newStock = currentStock - item['cantidad'];
+
+        if (newStock < 0) {
+          throw Exception('Stock insuficiente para el producto ${item['nombre']}');
+        }
+
+        batch.update(docRef, {'stock': newStock});
+      }
+
       final venta = {
         'email': user.email,
         'fecha': FieldValue.serverTimestamp(),
@@ -78,7 +116,13 @@ class _CarritoScreenState extends State<CarritoScreen> {
         'total': SimpleCart.instance.total,
         'uid': user.uid,
       };
-      await FirebaseFirestore.instance.collection('ventas').add(venta);
+
+      final ventasRef = FirebaseFirestore.instance.collection('ventas');
+      batch.set(ventasRef.doc(), venta);
+
+
+      await batch.commit();
+
       SimpleCart.instance.clear();
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Compra realizada con éxito')));
       setState(() {});
@@ -88,6 +132,7 @@ class _CarritoScreenState extends State<CarritoScreen> {
       setState(() => _procesando = false);
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +155,38 @@ class _CarritoScreenState extends State<CarritoScreen> {
                         child: ListTile(
                           leading: const Icon(Icons.shopping_bag),
                           title: Text(it['nombre']),
-                          subtitle: Text('Cantidad: ${it['cantidad']}  •  S/ ${((it['precio'] as num) * (it['cantidad'] as int)).toStringAsFixed(2)}'),
+                          subtitle: Row(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.remove_circle_outline),
+                                onPressed: () {
+                                  setState(() {
+                                    SimpleCart.instance.decrement(it['id']);
+                                  });
+                                },
+                              ),
+                              Text('${it['cantidad']}'),
+                              IconButton(
+                                icon: const Icon(Icons.add_circle_outline),
+                                onPressed: () {
+                                  final item = SimpleCart.instance._items[it['id']]!;
+                                  if (item['cantidad'] >= item['stock']) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Stock máximo alcanzado para ${item['nombre']}'),
+                                        duration: Duration(milliseconds: 500),),
+                                    );
+                                    return;
+                                  }
+                                  setState(() {
+                                    SimpleCart.instance.increment(it['id']);
+                                  });
+},
+                              ),
+                              const SizedBox(width: 10),
+                              Text('S/ ${(it['precio'] * it['cantidad']).toStringAsFixed(2)}'),
+                            ],
+                          ),
                           trailing: IconButton(
                             icon: const Icon(Icons.delete, color: Colors.red),
                             onPressed: () {
