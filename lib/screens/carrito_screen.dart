@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'catalogo_screen.dart';
 
-/// Modelo simple de carrito en memoria (singleton)
 class SimpleCart {
   SimpleCart._privateConstructor();
   static final SimpleCart instance = SimpleCart._privateConstructor();
 
-  // items: mapa idProducto -> { id, nombre, precio, cantidad }
+
   final Map<String, Map<String, dynamic>> _items = {};
 
   List<Map<String, dynamic>> get items => _items.values.toList();
 
   void addItem(Map<String, dynamic> producto) {
     final id = producto['id'] ?? producto['nombre'];
+    final imagen = convertirEnlaceDriveADirecto(producto['imagen'] ?? '');
     if (_items.containsKey(id)) {
       _items[id]!['cantidad'] = _items[id]!['cantidad'] + 1;
     } else {
@@ -23,6 +24,7 @@ class SimpleCart {
         'precio': producto['precio'],
         'cantidad': 1,
         'stock':producto['stock'],
+        'imagen': imagen,
       };
     }
   }
@@ -41,7 +43,7 @@ class SimpleCart {
       if (_items[id]!['cantidad'] > 1) {
         _items[id]!['cantidad']--;
       } else {
-        _items.remove(id); // Si llega a 0, lo eliminamos
+        _items.remove(id);
       }
     }
   }
@@ -153,7 +155,18 @@ class _CarritoScreenState extends State<CarritoScreen> {
                       return Card(
                         margin: const EdgeInsets.symmetric(vertical: 6),
                         child: ListTile(
-                          leading: const Icon(Icons.shopping_bag),
+                          leading: it['imagen'] != null && it['imagen'].isNotEmpty
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.network(
+                                    it['imagen'],
+                                    width: 50,
+                                    height: 50,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, size: 40),
+                                  ),
+                                )
+                              : const Icon(Icons.shopping_bag),
                           title: Text(it['nombre']),
                           subtitle: Row(
                             children: [
